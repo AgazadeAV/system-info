@@ -10,10 +10,19 @@ public class SystemMapper {
     public static String mapArchitecture(int arch) {
         return switch (arch) {
             case 0 -> "x86 (32-бит)";
+            case 1 -> "MIPS";
+            case 2 -> "Alpha";
+            case 3 -> "PowerPC";
             case 5 -> "ARM";
-            case 6 -> "Intel Itanium (IA64)";
+            case 6 -> "Itanium (IA64)";
+            case 7 -> "Alpha64";
+            case 8 -> "MSIL";
             case 9 -> "x64 (AMD или Intel)";
+            case 10 -> "IA32 on Win64";
+            case 11 -> "Neutral";
             case 12 -> "ARM64";
+            case 13 -> "ARM32 on ARM64";
+            case 14 -> "IA32 on ARM64";
             case 0xFFFF -> "Неизвестно";
             default -> "Не определено (" + arch + ")";
         };
