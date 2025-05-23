@@ -8,6 +8,9 @@ import com.sun.jna.ptr.LongByReference;
 
 public class DiskInfo implements SystemInfoProvider {
 
+    private static final char DRIVE_START = 'C';
+    private static final char DRIVE_END = 'Z';
+
     @Override
     public void show() {
         String formatted = formatOutput();
@@ -17,26 +20,27 @@ public class DiskInfo implements SystemInfoProvider {
     private String formatOutput() {
         StringBuilder sb = new StringBuilder();
 
-        for (char drive = 'C'; drive <= 'Z'; drive++) {
+        for (char drive = DRIVE_START; drive <= DRIVE_END; drive++) {
             String root = drive + ":\\";
 
-            LongByReference freeUser = new LongByReference();
-            LongByReference total = new LongByReference();
-            LongByReference freeTotal = new LongByReference();
+            LongByReference freeForUserBytes = new LongByReference();
+            LongByReference totalBytes = new LongByReference();
+            LongByReference freeTotalBytes = new LongByReference();
 
             boolean success = Kernel32DiskApi.INSTANCE.GetDiskFreeSpaceExW(
-                    new WString(root), freeUser, total, freeTotal
+                    new WString(root), freeForUserBytes, totalBytes, freeTotalBytes
             );
 
-            if (success && total.getValue() > 0) {
-                String totalStr = SystemMapper.mapSize(total.getValue());
-                String freeStr = SystemMapper.mapSize(freeUser.getValue());
+            if (success && totalBytes.getValue() > 0) {
+                String totalStr = SystemMapper.mapSize(totalBytes.getValue());
+                String freeStr = SystemMapper.mapSize(freeForUserBytes.getValue());
 
                 sb.append(String.format("""
-                        Диск: %s
-                        Общий объём: %s
-                        Свободно: %s
-                        """, root, totalStr, freeStr)
+                                Диск: %s
+                                Общий объём: %s
+                                Свободно: %s
+                                """,
+                        root, totalStr, freeStr)
                 );
             }
         }

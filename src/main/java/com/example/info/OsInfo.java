@@ -16,29 +16,29 @@ public class OsInfo implements SystemInfoProvider {
 
     private String formatOutput() {
         OSVERSIONINFOEX versionInfo = new OSVERSIONINFOEX();
-        boolean success = Kernel32.INSTANCE.GetVersionEx(versionInfo);
-        if (!success) {
+        if (!Kernel32.INSTANCE.GetVersionEx(versionInfo)) {
             return "Не удалось получить информацию об ОС через WinAPI.";
         }
 
+        int major = versionInfo.dwMajorVersion.intValue();
+        int minor = versionInfo.dwMinorVersion.intValue();
+        int build = versionInfo.dwBuildNumber.intValue();
+
+        String osName = SystemMapper.mapWindowsName(versionInfo);
+        String architecture = getArchitecture();
+
+        return String.format("""
+            Операционная система: %s
+            Версия: %d.%d (сборка %d)
+            Архитектура: %s
+            """, osName, major, minor, build, architecture);
+    }
+
+    private String getArchitecture() {
         SYSTEM_INFO sysInfo = new SYSTEM_INFO();
         Kernel32.INSTANCE.GetNativeSystemInfo(sysInfo);
         sysInfo.processorArchitecture.read();
-        int arch = sysInfo.processorArchitecture.pi.wProcessorArchitecture.intValue();
-
-        String architecture = SystemMapper.mapArchitecture(arch);
-        String osName = SystemMapper.mapWindowsName(versionInfo);
-
-        return String.format("""
-                        Операционная система: %s
-                        Версия: %d.%d (сборка %d)
-                        Архитектура: %s
-                        """,
-                osName,
-                versionInfo.dwMajorVersion.intValue(),
-                versionInfo.dwMinorVersion.intValue(),
-                versionInfo.dwBuildNumber.intValue(),
-                architecture
-        );
+        int archCode = sysInfo.processorArchitecture.pi.wProcessorArchitecture.intValue();
+        return SystemMapper.mapArchitecture(archCode);
     }
 }

@@ -94,4 +94,8 @@ public class SystemMapper {
             default -> "Неизвестно (" + code + ")";
         };
     }
+
+    public static String cleanCString(byte[] raw) {
+        return new String(raw).trim().replaceAll("\0", "");
+    }
 }

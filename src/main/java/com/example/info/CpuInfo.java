@@ -12,6 +12,8 @@ import java.io.InputStreamReader;
 
 public class CpuInfo implements SystemInfoProvider {
 
+    private static final String CPU_SPEED_FIELD = "MaxClockSpeed";
+
     @Override
     public void show() {
         String formatted = formatOutput();
@@ -23,7 +25,7 @@ public class CpuInfo implements SystemInfoProvider {
         Kernel32.INSTANCE.GetSystemInfo(info);
 
         int archCode = info.processorArchitecture.pi.wProcessorArchitecture.intValue();
-        String arch = SystemMapper.mapArchitecture(archCode);
+        String architecture = SystemMapper.mapArchitecture(archCode);
         String model = getCpuModelFromRegistry();
         int processorCount = info.dwNumberOfProcessors.intValue();
         int pageSize = info.dwPageSize.intValue();
@@ -35,7 +37,7 @@ public class CpuInfo implements SystemInfoProvider {
                         Размер страницы памяти: %d байт
                         %s
                         """,
-                model, arch, processorCount, pageSize, formatOutputWmi()
+                model, architecture, processorCount, pageSize, fetchCpuSpeedFromWmi()
         );
     }
 
@@ -51,30 +53,30 @@ public class CpuInfo implements SystemInfoProvider {
         }
     }
 
-    private String formatOutputWmi() {
-        String command = "powershell.exe -Command \"Get-WmiObject Win32_Processor | Select-Object MaxClockSpeed\"";
+    private String fetchCpuSpeedFromWmi() {
+        String command = "powershell.exe -Command \"Get-WmiObject Win32_Processor | Select-Object " + CPU_SPEED_FIELD + "\"";
 
         try {
             Process process = Runtime.getRuntime().exec(command);
             BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
 
-            String clock = null;
+            String clockSpeed = null;
             String line;
 
             while ((line = reader.readLine()) != null) {
-                if (line.trim().isEmpty() || line.contains("MaxClockSpeed")) continue;
+                if (line.trim().isEmpty() || line.contains(CPU_SPEED_FIELD)) continue;
                 line = line.trim();
                 if (line.matches("\\d+")) {
-                    clock = line;
+                    clockSpeed = line;
                     break;
                 }
             }
 
-            if (clock == null) {
+            if (clockSpeed == null) {
                 return "Не удалось извлечь частоту процессора.";
             }
 
-            return String.format("Частота: %s МГц", clock);
+            return String.format("Частота: %s МГц", clockSpeed);
 
         } catch (Exception e) {
             return "Ошибка при получении информации о процессоре через WMI: " + e.getMessage();
