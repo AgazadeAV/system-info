@@ -32,15 +32,17 @@ public class DiskInfo implements SystemInfoProvider {
             );
 
             if (success && totalBytes.getValue() > 0) {
-                String totalStr = SystemMapper.mapSize(totalBytes.getValue());
-                String freeStr = SystemMapper.mapSize(freeForUserBytes.getValue());
+                String total = SystemMapper.mapSize(totalBytes.getValue());
+                String free = SystemMapper.mapSize(freeForUserBytes.getValue());
+                String used = SystemMapper.mapSize(totalBytes.getValue() - freeForUserBytes.getValue());
 
                 sb.append(String.format("""
                                 Диск: %s
                                 Общий объём: %s
                                 Свободно: %s
+                                Используется: %s
                                 """,
-                        root, totalStr, freeStr)
+                        root, total, free, used)
                 );
             }
         }

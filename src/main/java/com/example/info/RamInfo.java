@@ -25,19 +25,20 @@ public class RamInfo implements SystemInfoProvider {
         Kernel32.INSTANCE.GlobalMemoryStatusEx(memStatus);
 
         long totalBytes = memStatus.ullTotalPhys.longValue();
-        long availableBytes = memStatus.ullAvailPhys.longValue();
-        long usedBytes = totalBytes - availableBytes;
+        long freeBytes = memStatus.ullAvailPhys.longValue();
+        long usedBytes = totalBytes - freeBytes;
+
+        String total = SystemMapper.mapSize(totalBytes);
+        String free = SystemMapper.mapSize(freeBytes);
+        String used = SystemMapper.mapSize(usedBytes);
 
         return String.format("""
                         Общий объём ОЗУ: %s
-                        Используется: %s
                         Свободно: %s
+                        Используется: %s
                         %s
                         """,
-                SystemMapper.mapSize(totalBytes),
-                SystemMapper.mapSize(usedBytes),
-                SystemMapper.mapSize(availableBytes),
-                formatOutputWmi()
+                total, free, used, formatOutputWmi()
         );
     }
 
